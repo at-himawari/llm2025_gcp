@@ -21,3 +21,5 @@
         docker push asia-northeast1-docker.pkg.dev/llm-experiment-449507/open-webui/open-webui:latest
 
       ```
+    - 環境変数設定
+      - OLLAMA_HOST:backendのURLを設定
