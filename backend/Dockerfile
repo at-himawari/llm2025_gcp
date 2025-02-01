@@ -14,15 +14,12 @@ RUN curl -fsSL https://ollama.com/install.sh | sh
 RUN ollama --version
 
 # サーバー起動とモデルダウンロード用スクリプト
-# ※ollama serveは永続的に起動するため、バックグラウンドで起動し、
-#    curlでポートが開いているか確認した後、モデルのダウンロードを実行し、
-#    最後にサーバーを停止するという流れにしています。
+# ※ビルド時は一時的にポート11434でサーバーを起動してモデルをダウンロードします。
 RUN set -ex; \
     # サーバーをバックグラウンドで起動
     ollama serve & \
     SERVER_PID=$!; \
     echo "Waiting for ollama serve to be ready..."; \
-    # ポート11434にHTTPリクエストが通るまでループ（タイムアウトは適宜調整してください）
     for i in $(seq 1 30); do \
         if curl -s http://localhost:11434 > /dev/null; then \
             echo "Server is up"; \
@@ -42,13 +39,19 @@ FROM --platform=linux/amd64 ubuntu:20.04
 # ランタイムに必要なパッケージをインストール
 RUN apt-get update && apt-get install -y ca-certificates && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# builderステージからOllamaのバイナリとキャッシュ（モデルデータ）をコピー
+# builder ステージから Ollama のバイナリとキャッシュ（モデルデータ）をコピー
 COPY --from=builder /usr/local/bin/ollama /usr/local/bin/ollama
 COPY --from=builder /root/.ollama /root/.ollama
 
-# 必要なポートの公開（※Cloud Runでは環境変数PORTが指定されることが多いですが、
-# 今回はローカル検証用として11434を利用）
-EXPOSE 11434
+# entrypoint.sh をコンテナにコピーし、実行権限を付与
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-# コンテナ起動時はollama serveでサーバーを起動
-CMD ["ollama", "serve"]
+# 環境変数 PORT をデフォルト 8080 に設定（Cloud Run 等で上書き可能）
+ENV PORT=8080
+
+# コンテナ内でリッスンするポートを EXPOSE（PORT は展開されないため数値で指定）
+EXPOSE 8080
+
+# コンテナ起動時は entrypoint.sh を実行
+CMD ["/entrypoint.sh"]
