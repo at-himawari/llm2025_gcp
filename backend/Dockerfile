@@ -28,7 +28,7 @@ RUN set -ex; \
         sleep 1; \
     done; \
     echo "Downloading model..."; \
-    ollama run hf.co/elyza/Llama-3-ELYZA-JP-8B-GGUF; \
+    ollama run phi4; \
     echo "Stopping server..."; \
     kill $SERVER_PID; \
     wait $SERVER_PID || true
