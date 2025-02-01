@@ -15,6 +15,8 @@ RUN curl -fsSL https://ollama.com/install.sh | sh
 # 必要に応じてOllamaのバージョン確認や動作確認コマンドを追加できます
 RUN ollama --version
 
+RUN ollama serve
+
 # ポートの設定
 EXPOSE 11434
 
