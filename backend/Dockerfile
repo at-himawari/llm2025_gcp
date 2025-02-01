@@ -28,7 +28,7 @@ RUN set -ex; \
         sleep 1; \
     done; \
     echo "Downloading model..."; \
-    ollama run phi4; \
+    ollama run phi3:mini; \
     echo "Stopping server..."; \
     kill $SERVER_PID; \
     wait $SERVER_PID || true
